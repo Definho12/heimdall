@@ -15,11 +15,14 @@ class LeitorTest {
         for (r in listOf("sudeste", "sul", "nordeste", "norte", "centrooeste", "nacional")) {
             val html = amostra("$r.html") ?: continue
             val l = Leitor.lerRegiao(html, nacional = r == "nacional")
-            relatorio.append("== $r: ${l.size}\n")
+            val doc = org.jsoup.Jsoup.parse(html)
+            relatorio.append("== $r: ${l.size} (html ${html.length}, blocos ${doc.select("div[data-url]").size}, cc ${doc.select(".cc").size})\n")
+            doc.select("div[data-url]").firstOrNull()?.let { relatorio.append("  BLOCO: " + it.outerHtml().take(800) + "\n") }
             l.take(4).forEach { relatorio.append("  $it\n") }
             relatorio.append("  jurídicos: ${l.count { Juridico.classificar(it.textoDaLista()) != null }} -> ")
             relatorio.append(l.mapNotNull { c -> Juridico.classificar(c.textoDaLista())?.let { "${c.orgao} [$it]" } }.take(15).joinToString("; "))
             relatorio.append("\n")
+            File("build/leitor-relatorio.txt").writeText(relatorio.toString())
             if (r != "nacional") assertTrue("poucos concursos em $r: ${l.size}", l.size >= 5)
             l.forEach { assertTrue("prazo vazio: $it", it.prazo.isNotBlank() || r == "nacional") }
         }
