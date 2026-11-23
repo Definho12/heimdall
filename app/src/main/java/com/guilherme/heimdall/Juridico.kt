@@ -5,8 +5,8 @@ import java.text.Normalizer
 /** Decide se um concurso é da área jurídica, olhando nomes de órgãos e cargos. */
 object Juridico {
     private val termos: List<Pair<Regex, String>> = listOf(
-        "\\bjuiz(a|es)?\\b|magistratura" to "Magistratura",
-        "\\bpromotor" to "Promotor",
+        "\\bjuiz(a|es)?\\b(?! de fora)|magistratura" to "Magistratura",
+        "promotor(a|es)? de justica|promotoria|\\bpromotor(a)? substitut" to "Promotor",
         "ministerio publico|\\bmp[\\s/-]?(ac|al|ap|am|ba|ce|df|dft|es|go|ma|mt|ms|mg|pa|pb|pr|pe|pi|rj|rn|rs|ro|rr|sc|sp|se|to|u|f|t|m|e|c)\\b|\\bmpdft\\b|\\bmpf\\b|\\bmpt\\b|\\bmpm\\b" to "Ministério Público",
         "defensor|defensoria" to "Defensoria",
         "procurador|procuradoria|\\bpge\\b|\\bpgm\\b|\\bagu\\b|\\bpgfn\\b" to "Procuradoria",
@@ -25,9 +25,16 @@ object Juridico {
     fun normalizar(s: String): String =
         Normalizer.normalize(s.lowercase(), Normalizer.Form.NFD).replace(Regex("\\p{M}+"), "")
 
+    // expressões comuns em qualquer edital que não indicam cargo jurídico
+    private val ignorar = Regex(
+        "regimes? juridicos?|pessoas? juridicas?|natureza juridica|seguranca juridica|personalidade juridica|" +
+            "juiz de fora|tribunal de contas (do estado|da uniao|dos municipios)? ?(recomenda|determin)|" +
+            "conforme (o |a )?(tribunal|decisao judicial)"
+    )
+
     /** Retorna o motivo (ex.: "Advogado") ou null se não achou nada jurídico. */
     fun classificar(texto: String): String? {
-        val t = normalizar(texto)
+        val t = ignorar.replace(normalizar(texto), " ")
         return termos.firstOrNull { it.first.containsMatchIn(t) }?.second
     }
 

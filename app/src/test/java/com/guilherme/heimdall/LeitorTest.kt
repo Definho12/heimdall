@@ -31,10 +31,15 @@ class LeitorTest {
     }
 
     @Test fun leNoticia() {
-        val html = amostra("noticia1.html") ?: return
-        val t = Leitor.textoNoticia(html)
-        File("build/noticia-texto.txt").writeText(t)
-        assertTrue(t.length > 200)
+        val rel = StringBuilder()
+        for (i in 1..3) {
+            val html = amostra("noticia$i.html") ?: continue
+            val t = Leitor.textoNoticia(html)
+            rel.append("noticia$i: ${Juridico.classificar(t)} | ${t.take(150)}\n")
+            assertTrue(t.length > 200)
+            assertTrue("pegou o menu junto", !t.startsWith("Pesquisar"))
+        }
+        File("build/noticia-texto.txt").writeText(rel.toString())
     }
 
     @Test fun classificaJuridico() {
@@ -44,5 +49,8 @@ class LeitorTest {
         assertEquals("Defensoria", Juridico.classificar("Defensoria Pública do Estado"))
         assertNull(Juridico.classificar("Prefeitura de Treinópolis contrata Motorista e Gari"))
         assertNull(Juridico.classificar("Câmara de Vereadores: Auxiliar de Serviços Gerais"))
+        assertNull(Juridico.classificar("Prefeitura de Juiz de Fora - MG: regime jurídico estatutário, Promotor de Vendas"))
+        assertEquals("Magistratura", Juridico.classificar("TJMG abre concurso para Juiz Substituto"))
+        assertEquals("Procuradoria", Juridico.classificar("prova prático-profissional para procurador municipal"))
     }
 }

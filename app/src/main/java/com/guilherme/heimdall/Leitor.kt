@@ -43,7 +43,7 @@ object Leitor {
     /** Texto principal de uma notícia (para descobrir cargos quando a lista diz só "Vários cargos"). */
     fun textoNoticia(html: String): String {
         val doc = Jsoup.parse(html)
-        val corpo = doc.selectFirst("article, #noticia, .noticia, [itemprop=articleBody], #conteudo, main") ?: doc.body()
+        val corpo = doc.selectFirst("article#noticia") ?: doc.selectFirst("#noticia") ?: doc.selectFirst("article") ?: doc.body()
         return corpo.text()
     }
 }
