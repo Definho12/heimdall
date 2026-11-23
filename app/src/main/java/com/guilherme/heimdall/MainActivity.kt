@@ -160,7 +160,7 @@ fun TelaLista(a: Armazem, versao: Int, primeiraVez: Boolean, onAjustes: () -> Un
         todos.filter { it.ativo && a.estaNaRegiao(it) }
             .filter { filtro == "todos" || a.motivoInteresse(it) != null }
             .filter { b.isEmpty() || Juridico.normalizar(it.textoDaLista() + " " + it.uf).contains(b) }
-            .sortedWith(compareByDescending<Concurso> { ehNovo(it) }.thenBy { diasRestantes(it.prazo) ?: 9999 })
+            .sortedWith(compareByDescending<Concurso> { ehNovo(it) }.thenBy { diasRestantes(it.prazo)?.let { d -> if (d < 0) 99999 else d } ?: 9999 })
     }
     val semClassificar = todos.count { it.ativo && a.estaNaRegiao(it) && it.juridico == null }
 
@@ -246,10 +246,10 @@ fun CartaoConcurso(c: Concurso, motivo: String?, onClick: () -> Unit) {
             if (motivo != null) Etiqueta(motivo, Ouro)
             val prazoTxt = when {
                 dias == null -> c.prazo
-                dias < 0 -> "até ${c.prazo}"
+                dias < 0 -> "Prazo: ${c.prazo}"
                 dias == 0 -> "Inscrições terminam hoje"
                 dias == 1 -> "Último dia amanhã"
-                else -> "Até ${c.prazo.take(5)} · faltam $dias dias"
+                else -> "Até ${Regex("\\d{2}/\\d{2}").findAll(c.prazo).lastOrNull()?.value ?: c.prazo} · faltam $dias dias"
             }
             if (prazoTxt.isNotBlank()) Etiqueta(prazoTxt, if (dias != null && dias <= 3) Alerta else Apagado)
         }

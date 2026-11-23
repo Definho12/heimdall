@@ -21,7 +21,7 @@ jobs:
           for r in sudeste sul nordeste norte centrooeste nacional; do
             curl -sL -A "$UA" --max-time 40 "https://www.pciconcursos.com.br/concursos/$r/" -o amostras/$r.html || true
           done
-          N=$(grep -o 'https://www.pciconcursos.com.br/noticias/[a-z0-9-]*' amostras/sudeste.html | head -40 | sort -u | head -3)
+          N=$(grep -o 'data-url="[^"]*"' amostras/sudeste.html | cut -d'"' -f2 | head -3)
           i=1; for u in $N; do curl -sL -A "$UA" --max-time 40 "$u" -o amostras/noticia$i.html; i=$((i+1)); done
           ls -la amostras
           mkdir -p app/src/test/resources && cp amostras/*.html app/src/test/resources/
